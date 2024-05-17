@@ -1,0 +1,81 @@
+<!-- frontend/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Search</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            width: 50%;
+            margin: 0 auto;
+            padding-top: 50px;
+        }
+        #search-bar {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #d1d9e6;
+            border-radius: 10px;
+        }
+        #suggestions {
+            border: 2px solid #d1d9e6;
+            border-radius: 10px;
+            background-color: #ECF0F3;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+        #suggestions li {
+            padding: 10px;
+            cursor: pointer;
+            list-style-type: none;
+        }
+        #suggestions li:hover {
+            background-color: #d1d9e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Product Search</h1>
+        <input type="text" id="search-bar" placeholder="Search for a product...">
+        <ul id="suggestions"></ul>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $('#search-bar').on('input', function(){
+                var query = $(this).val();
+                if (query.length > 0) {
+                    $.ajax({
+                        url: 'http://localhost:5000/search',
+                        method: 'GET',
+                        data: { q: query },
+                        success: function(data) {
+                            $('#suggestions').empty().show();
+                            data.forEach(function(item) {
+                                $('#suggestions').append('<li data-id="' + item['Product ID'] + '">' + item['Product Name'] + ' - $' + item['Unit Price'] + '</li>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#suggestions').hide();
+                }
+            });
+
+            $(document).on('click', '#suggestions li', function(){
+                var productId = $(this).data('id');
+                var productName = $(this).text();
+                // Add the selected product to the temporary database (or local storage for simplicity)
+                var selectedProducts = JSON.parse(localStorage.getItem('selectedProducts')) || [];
+                selectedProducts.push({ productId, productName });
+                localStorage.setItem('selectedProducts', JSON.stringify(selectedProducts));
+                alert('Added to temporary database: ' + productName);
+            });
+        });
+    </script>
+</body>
+</html>
